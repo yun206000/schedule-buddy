@@ -1,12 +1,83 @@
-// Update this page (the content is just a fallback if you fail to update the page)
+import { useState } from 'react';
+import { CalendarHeader } from '@/components/calendar/CalendarHeader';
+import { CalendarGrid } from '@/components/calendar/CalendarGrid';
+import { StaffFilter } from '@/components/calendar/StaffFilter';
+import { Legend } from '@/components/calendar/Legend';
+import { useStaff } from '@/hooks/useStaff';
+import { useSchedules } from '@/hooks/useSchedules';
+import { Button } from '@/components/ui/button';
+import { Loader2, Lock } from 'lucide-react';
+import { Link } from 'react-router-dom';
 
 const Index = () => {
+  const today = new Date();
+  const [year, setYear] = useState(today.getFullYear());
+  const [month, setMonth] = useState(today.getMonth());
+  const [filterStaffId, setFilterStaffId] = useState<string | null>(null);
+
+  const { activeStaff, isLoading: staffLoading } = useStaff();
+  const { schedules, isLoading: schedulesLoading } = useSchedules(year, month);
+
+  const isLoading = staffLoading || schedulesLoading;
+
   return (
-    <div className="flex min-h-screen items-center justify-center bg-background">
-      <div className="text-center">
-        <h1 className="mb-4 text-4xl font-bold">Welcome to Your Blank App</h1>
-        <p className="text-xl text-muted-foreground">Start building your amazing project here!</p>
-      </div>
+    <div className="min-h-screen bg-background">
+      {/* 頂部導航 */}
+      <header className="sticky top-0 z-50 bg-card/95 backdrop-blur border-b border-border">
+        <div className="container mx-auto px-4">
+          <div className="flex items-center justify-between h-16">
+            <h1 className="text-xl font-bold text-primary">排班管理系統</h1>
+            <Button variant="outline" size="sm" asChild>
+              <Link to="/admin">
+                <Lock className="h-4 w-4 mr-1" />
+                管理登入
+              </Link>
+            </Button>
+          </div>
+        </div>
+      </header>
+
+      {/* 主要內容 */}
+      <main className="container mx-auto px-4 py-6">
+        {isLoading ? (
+          <div className="flex items-center justify-center py-20">
+            <Loader2 className="h-10 w-10 animate-spin text-primary" />
+          </div>
+        ) : (
+          <div className="space-y-6 animate-fade-in">
+            {/* 標題與控制 */}
+            <CalendarHeader
+              year={year}
+              month={month}
+              onYearChange={setYear}
+              onMonthChange={setMonth}
+            />
+
+            {/* 篩選與圖例 */}
+            <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
+              <StaffFilter
+                staff={activeStaff}
+                selectedStaffId={filterStaffId}
+                onStaffChange={setFilterStaffId}
+              />
+              <Legend />
+            </div>
+
+            {/* 月曆 */}
+            <CalendarGrid
+              year={year}
+              month={month}
+              schedules={schedules}
+              filterStaffId={filterStaffId}
+            />
+
+            {/* 頁尾說明 */}
+            <div className="text-center text-sm text-muted-foreground py-4">
+              <p>🔔 值班 = 當日負責人員 &nbsp;|&nbsp; 🌴 休假 = 當日請假人員</p>
+            </div>
+          </div>
+        )}
+      </main>
     </div>
   );
 };
