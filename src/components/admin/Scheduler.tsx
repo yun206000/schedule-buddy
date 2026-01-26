@@ -6,8 +6,8 @@ import { CalendarGrid } from '@/components/calendar/CalendarGrid';
 import { CalendarHeader } from '@/components/calendar/CalendarHeader';
 import { useStaff } from '@/hooks/useStaff';
 import { useSchedules } from '@/hooks/useSchedules';
-import { ScheduleMode, ValidationWarning, ValidationError } from '@/types/schedule';
-import { Calendar, Loader2, AlertTriangle, XCircle, Save } from 'lucide-react';
+import { Schedule, ScheduleMode, ValidationWarning, ValidationError } from '@/types/schedule';
+import { Calendar, Loader2, AlertTriangle, XCircle, Save, Trash2 } from 'lucide-react';
 import { format } from 'date-fns';
 import { toast } from '@/hooks/use-toast';
 import {
@@ -31,9 +31,10 @@ export function Scheduler() {
   const [warnings, setWarnings] = useState<ValidationWarning[]>([]);
   const [errors, setErrors] = useState<ValidationError[]>([]);
   const [showWarningDialog, setShowWarningDialog] = useState(false);
+  const [scheduleToDelete, setScheduleToDelete] = useState<Schedule | null>(null);
 
   const { activeStaff, isLoading: staffLoading } = useStaff();
-  const { schedules, isLoading: schedulesLoading, validateSchedule, addSchedule } = useSchedules(year, month);
+  const { schedules, isLoading: schedulesLoading, validateSchedule, addSchedule, deleteSchedule } = useSchedules(year, month);
 
   const selectedStaff = useMemo(
     () => activeStaff.find(s => s.id === selectedStaffId),
@@ -108,6 +109,20 @@ export function Scheduler() {
     setSelectedDates(new Set());
   };
 
+  const handleScheduleDelete = (schedule: Schedule) => {
+    setScheduleToDelete(schedule);
+  };
+
+  const confirmDelete = () => {
+    if (scheduleToDelete) {
+      deleteSchedule.mutate(scheduleToDelete.id, {
+        onSuccess: () => {
+          setScheduleToDelete(null);
+        },
+      });
+    }
+  };
+
   // 計算當前選擇日期的統計
   const selectionStats = useMemo(() => {
     if (selectedDates.size === 0) return null;
@@ -152,6 +167,8 @@ export function Scheduler() {
           selectedDates={selectedDates}
           onDateClick={handleDateClick}
           selectable={!!selectedStaffId}
+          onScheduleDelete={handleScheduleDelete}
+          editable={true}
         />
 
         {/* 操作面板 */}
@@ -273,6 +290,44 @@ export function Scheduler() {
             <AlertDialogCancel>取消</AlertDialogCancel>
             <AlertDialogAction onClick={performSave} className="bg-warning text-warning-foreground">
               確認儲存
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
+
+      {/* 刪除確認對話框 */}
+      <AlertDialog open={!!scheduleToDelete} onOpenChange={() => setScheduleToDelete(null)}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle className="flex items-center gap-2 text-destructive">
+              <Trash2 className="h-5 w-5" />
+              確認刪除排程
+            </AlertDialogTitle>
+            <AlertDialogDescription>
+              {scheduleToDelete && (
+                <span>
+                  確定要刪除 <strong>{scheduleToDelete.staff?.name}</strong> 在{' '}
+                  <strong>{scheduleToDelete.date}</strong> 的
+                  {scheduleToDelete.type === 'SHIFT' ? '值班' : '休假'}安排嗎？
+                </span>
+              )}
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>取消</AlertDialogCancel>
+            <AlertDialogAction 
+              onClick={confirmDelete}
+              className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+              disabled={deleteSchedule.isPending}
+            >
+              {deleteSchedule.isPending ? (
+                <>
+                  <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                  刪除中...
+                </>
+              ) : (
+                '確認刪除'
+              )}
             </AlertDialogAction>
           </AlertDialogFooter>
         </AlertDialogContent>

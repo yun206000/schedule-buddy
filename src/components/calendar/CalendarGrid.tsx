@@ -18,6 +18,8 @@ interface CalendarGridProps {
   onDateClick?: (date: Date) => void;
   selectable?: boolean;
   filterStaffId?: string | null;
+  onScheduleDelete?: (schedule: Schedule) => void;
+  editable?: boolean;
 }
 
 const WEEKDAYS = ['日', '一', '二', '三', '四', '五', '六'];
@@ -30,6 +32,8 @@ export function CalendarGrid({
   onDateClick,
   selectable = false,
   filterStaffId = null,
+  onScheduleDelete,
+  editable = false,
 }: CalendarGridProps) {
   const currentMonth = new Date(year, month);
 
@@ -89,6 +93,8 @@ export function CalendarGrid({
               isSelected={selectedDates.has(dateStr)}
               onClick={() => onDateClick?.(date)}
               selectable={selectable}
+              onScheduleDelete={onScheduleDelete}
+              editable={editable}
             />
           );
         })}

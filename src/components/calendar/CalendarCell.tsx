@@ -1,6 +1,7 @@
 import { Schedule } from '@/types/schedule';
 import { cn } from '@/lib/utils';
 import { format, isToday, isSameMonth, isWeekend } from 'date-fns';
+import { X } from 'lucide-react';
 
 interface CalendarCellProps {
   date: Date;
@@ -10,6 +11,8 @@ interface CalendarCellProps {
   isSelected?: boolean;
   onClick?: () => void;
   selectable?: boolean;
+  onScheduleDelete?: (schedule: Schedule) => void;
+  editable?: boolean;
 }
 
 export function CalendarCell({
@@ -20,10 +23,19 @@ export function CalendarCell({
   isSelected = false,
   onClick,
   selectable = false,
+  onScheduleDelete,
+  editable = false,
 }: CalendarCellProps) {
   const isCurrentMonth = isSameMonth(date, currentMonth);
   const isTodayDate = isToday(date);
   const isWeekendDay = isWeekend(date);
+
+  const handleScheduleClick = (e: React.MouseEvent, schedule: Schedule) => {
+    if (editable && onScheduleDelete) {
+      e.stopPropagation();
+      onScheduleDelete(schedule);
+    }
+  };
 
   return (
     <div
@@ -48,20 +60,34 @@ export function CalendarCell({
         {shifts.map((shift) => (
           <div
             key={shift.id}
-            className="badge-shift text-[10px] sm:text-xs truncate"
-            title={shift.staff?.name}
+            onClick={(e) => handleScheduleClick(e, shift)}
+            className={cn(
+              "badge-shift text-[10px] sm:text-xs truncate flex items-center gap-0.5",
+              editable && "cursor-pointer hover:opacity-80 group"
+            )}
+            title={editable ? `點擊刪除 ${shift.staff?.name} 的值班` : shift.staff?.name}
           >
-            🔔 {shift.staff?.name}
+            <span className="truncate">🔔 {shift.staff?.name}</span>
+            {editable && (
+              <X className="h-3 w-3 flex-shrink-0 opacity-0 group-hover:opacity-100 transition-opacity" />
+            )}
           </div>
         ))}
 
         {leaves.map((leave) => (
           <div
             key={leave.id}
-            className="badge-leave text-[10px] sm:text-xs truncate"
-            title={leave.staff?.name}
+            onClick={(e) => handleScheduleClick(e, leave)}
+            className={cn(
+              "badge-leave text-[10px] sm:text-xs truncate flex items-center gap-0.5",
+              editable && "cursor-pointer hover:opacity-80 group"
+            )}
+            title={editable ? `點擊刪除 ${leave.staff?.name} 的休假` : leave.staff?.name}
           >
-            🌴 {leave.staff?.name}
+            <span className="truncate">🌴 {leave.staff?.name}</span>
+            {editable && (
+              <X className="h-3 w-3 flex-shrink-0 opacity-0 group-hover:opacity-100 transition-opacity" />
+            )}
           </div>
         ))}
       </div>
