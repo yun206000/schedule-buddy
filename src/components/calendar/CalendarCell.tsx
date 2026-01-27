@@ -56,19 +56,18 @@ export function CalendarCell({
         {format(date, 'd')}
       </div>
 
-      <div className="flex-1 space-y-0.5 overflow-hidden">
+      <div className="flex-1 space-y-1 overflow-hidden">
         {shifts.map((shift) => (
           <div
             key={shift.id}
             onClick={(e) => handleScheduleClick(e, shift)}
             className={cn(
-              "badge-shift text-[9px] sm:text-xs py-0.5 px-1 sm:px-2.5 sm:py-1 truncate flex items-center gap-0.5",
+              "badge-shift text-[10px] sm:text-xs truncate flex items-center gap-0.5",
               editable && "cursor-pointer hover:opacity-80 group"
             )}
-            title={shift.staff?.name}
+            title={editable ? `點擊刪除 ${shift.staff?.name} 的值班` : shift.staff?.name}
           >
-            <span className="hidden sm:inline truncate">🔔 {shift.staff?.name}</span>
-            <span className="sm:hidden truncate">🔔{shift.staff?.name?.charAt(0)}</span>
+            <span className="truncate">🔔 {shift.staff?.name}</span>
             {editable && (
               <X className="h-3 w-3 flex-shrink-0 opacity-0 group-hover:opacity-100 transition-opacity" />
             )}
@@ -80,13 +79,12 @@ export function CalendarCell({
             key={leave.id}
             onClick={(e) => handleScheduleClick(e, leave)}
             className={cn(
-              "badge-leave text-[9px] sm:text-xs py-0.5 px-1 sm:px-2.5 sm:py-1 truncate flex items-center gap-0.5",
+              "badge-leave text-[10px] sm:text-xs truncate flex items-center gap-0.5",
               editable && "cursor-pointer hover:opacity-80 group"
             )}
-            title={leave.staff?.name}
+            title={editable ? `點擊刪除 ${leave.staff?.name} 的休假` : leave.staff?.name}
           >
-            <span className="hidden sm:inline truncate">🌴 {leave.staff?.name}</span>
-            <span className="sm:hidden truncate">🌴{leave.staff?.name?.charAt(0)}</span>
+            <span className="truncate">🌴 {leave.staff?.name}</span>
             {editable && (
               <X className="h-3 w-3 flex-shrink-0 opacity-0 group-hover:opacity-100 transition-opacity" />
             )}
