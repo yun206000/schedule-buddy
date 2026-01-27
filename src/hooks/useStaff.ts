@@ -15,7 +15,10 @@ export function useStaff() {
         .order('name');
       
       if (error) throw error;
-      return data;
+      return (data as unknown as Staff[]).map(s => ({
+        ...s,
+        display_name: s.display_name ?? s.name.slice(-1)
+      }));
     },
   });
 
@@ -42,10 +45,15 @@ export function useStaff() {
   });
 
   const updateStaff = useMutation({
-    mutationFn: async ({ id, name, is_active }: { id: string; name?: string; is_active?: boolean }) => {
+    mutationFn: async ({ id, name, display_name, is_active }: { id: string; name?: string; display_name?: string; is_active?: boolean }) => {
+      const updateData: { name?: string; display_name?: string; is_active?: boolean } = {};
+      if (name !== undefined) updateData.name = name;
+      if (display_name !== undefined) updateData.display_name = display_name;
+      if (is_active !== undefined) updateData.is_active = is_active;
+      
       const { data, error } = await supabase
         .from('staff')
-        .update({ name, is_active })
+        .update(updateData)
         .eq('id', id)
         .select()
         .single();

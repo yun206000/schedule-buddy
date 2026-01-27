@@ -23,6 +23,7 @@ export function StaffManager() {
   const [newName, setNewName] = useState('');
   const [editingId, setEditingId] = useState<string | null>(null);
   const [editingName, setEditingName] = useState('');
+  const [editingDisplayName, setEditingDisplayName] = useState('');
 
   const handleAdd = () => {
     if (newName.trim()) {
@@ -31,22 +32,29 @@ export function StaffManager() {
     }
   };
 
-  const handleStartEdit = (id: string, name: string) => {
+  const handleStartEdit = (id: string, name: string, displayName: string) => {
     setEditingId(id);
     setEditingName(name);
+    setEditingDisplayName(displayName);
   };
 
   const handleSaveEdit = () => {
     if (editingId && editingName.trim()) {
-      updateStaff.mutate({ id: editingId, name: editingName.trim() });
+      updateStaff.mutate({ 
+        id: editingId, 
+        name: editingName.trim(),
+        display_name: editingDisplayName.trim() || editingName.trim().slice(-1)
+      });
       setEditingId(null);
       setEditingName('');
+      setEditingDisplayName('');
     }
   };
 
   const handleCancelEdit = () => {
     setEditingId(null);
     setEditingName('');
+    setEditingDisplayName('');
   };
 
   const handleToggleActive = (id: string, currentState: boolean) => {
@@ -110,25 +118,43 @@ export function StaffManager() {
                 className="flex items-center gap-3 p-3 bg-muted/30 rounded-lg hover:bg-muted/50 transition-colors"
               >
                 {editingId === s.id ? (
-                  <>
-                    <Input
-                      value={editingName}
-                      onChange={(e) => setEditingName(e.target.value)}
-                      className="flex-1"
-                      autoFocus
-                    />
-                    <Button size="icon" variant="ghost" onClick={handleSaveEdit}>
-                      <Check className="h-4 w-4 text-success" />
-                    </Button>
-                    <Button size="icon" variant="ghost" onClick={handleCancelEdit}>
-                      <X className="h-4 w-4 text-destructive" />
-                    </Button>
-                  </>
+                  <div className="flex-1 flex flex-col sm:flex-row gap-2">
+                    <div className="flex-1">
+                      <Label className="text-xs text-muted-foreground mb-1 block">姓名</Label>
+                      <Input
+                        value={editingName}
+                        onChange={(e) => setEditingName(e.target.value)}
+                        autoFocus
+                      />
+                    </div>
+                    <div className="w-full sm:w-20">
+                      <Label className="text-xs text-muted-foreground mb-1 block">簡稱</Label>
+                      <Input
+                        value={editingDisplayName}
+                        onChange={(e) => setEditingDisplayName(e.target.value)}
+                        placeholder={editingName.slice(-1)}
+                        maxLength={2}
+                      />
+                    </div>
+                    <div className="flex items-end gap-1">
+                      <Button size="icon" variant="ghost" onClick={handleSaveEdit}>
+                        <Check className="h-4 w-4 text-success" />
+                      </Button>
+                      <Button size="icon" variant="ghost" onClick={handleCancelEdit}>
+                        <X className="h-4 w-4 text-destructive" />
+                      </Button>
+                    </div>
+                  </div>
                 ) : (
                   <>
-                    <span className={`flex-1 ${!s.is_active ? 'text-muted-foreground line-through' : ''}`}>
-                      {s.name}
-                    </span>
+                    <div className="flex-1 flex items-center gap-2">
+                      <span className={`${!s.is_active ? 'text-muted-foreground line-through' : ''}`}>
+                        {s.name}
+                      </span>
+                      <span className="text-xs text-muted-foreground bg-muted px-1.5 py-0.5 rounded">
+                        簡稱: {s.display_name}
+                      </span>
+                    </div>
                     <div className="flex items-center gap-2">
                       <Label htmlFor={`active-${s.id}`} className="text-xs text-muted-foreground">
                         啟用
@@ -142,7 +168,7 @@ export function StaffManager() {
                     <Button
                       size="icon"
                       variant="ghost"
-                      onClick={() => handleStartEdit(s.id, s.name)}
+                      onClick={() => handleStartEdit(s.id, s.name, s.display_name)}
                     >
                       <Pencil className="h-4 w-4" />
                     </Button>
