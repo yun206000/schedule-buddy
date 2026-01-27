@@ -67,7 +67,8 @@ export function CalendarCell({
             )}
             title={editable ? `點擊刪除 ${shift.staff?.name} 的值班` : shift.staff?.name}
           >
-            <span className="truncate">🔔 {shift.staff?.name}</span>
+            <span className="truncate sm:hidden">🔔{shift.staff?.display_name}</span>
+            <span className="truncate hidden sm:inline">🔔 {shift.staff?.name}</span>
             {editable && (
               <X className="h-3 w-3 flex-shrink-0 opacity-0 group-hover:opacity-100 transition-opacity" />
             )}
@@ -84,7 +85,8 @@ export function CalendarCell({
             )}
             title={editable ? `點擊刪除 ${leave.staff?.name} 的休假` : leave.staff?.name}
           >
-            <span className="truncate">🌴 {leave.staff?.name}</span>
+            <span className="truncate sm:hidden">🌴{leave.staff?.display_name}</span>
+            <span className="truncate hidden sm:inline">🌴 {leave.staff?.name}</span>
             {editable && (
               <X className="h-3 w-3 flex-shrink-0 opacity-0 group-hover:opacity-100 transition-opacity" />
             )}
