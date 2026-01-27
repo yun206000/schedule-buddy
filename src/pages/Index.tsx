@@ -3,22 +3,48 @@ import { CalendarHeader } from '@/components/calendar/CalendarHeader';
 import { CalendarGrid } from '@/components/calendar/CalendarGrid';
 import { StaffFilter } from '@/components/calendar/StaffFilter';
 import { Legend } from '@/components/calendar/Legend';
+import { DayDetailSheet } from '@/components/calendar/DayDetailSheet';
 import { useStaff } from '@/hooks/useStaff';
 import { useSchedules } from '@/hooks/useSchedules';
 import { Button } from '@/components/ui/button';
 import { Loader2, Lock } from 'lucide-react';
 import { Link } from 'react-router-dom';
-
+import { format } from 'date-fns';
+import { Schedule } from '@/types/schedule';
 const Index = () => {
   const today = new Date();
   const [year, setYear] = useState(today.getFullYear());
   const [month, setMonth] = useState(today.getMonth());
   const [filterStaffId, setFilterStaffId] = useState<string | null>(null);
+  const [selectedDate, setSelectedDate] = useState<Date | null>(null);
+  const [sheetOpen, setSheetOpen] = useState(false);
 
   const { activeStaff, isLoading: staffLoading } = useStaff();
   const { schedules, isLoading: schedulesLoading } = useSchedules(year, month);
 
   const isLoading = staffLoading || schedulesLoading;
+
+  const handleDateClick = (date: Date) => {
+    setSelectedDate(date);
+    setSheetOpen(true);
+  };
+
+  const getSchedulesForSelectedDate = (): { shifts: Schedule[]; leaves: Schedule[] } => {
+    if (!selectedDate) return { shifts: [], leaves: [] };
+    const dateStr = format(selectedDate, 'yyyy-MM-dd');
+    let filtered = schedules.filter(s => s.date === dateStr);
+    
+    if (filterStaffId) {
+      filtered = filtered.filter(s => s.staff_id === filterStaffId);
+    }
+
+    return {
+      shifts: filtered.filter(s => s.type === 'SHIFT'),
+      leaves: filtered.filter(s => s.type === 'LEAVE'),
+    };
+  };
+
+  const { shifts: selectedShifts, leaves: selectedLeaves } = getSchedulesForSelectedDate();
 
   return (
     <div className="min-h-screen bg-background">
@@ -69,6 +95,17 @@ const Index = () => {
               month={month}
               schedules={schedules}
               filterStaffId={filterStaffId}
+              selectable={true}
+              onDateClick={handleDateClick}
+            />
+
+            {/* 日期詳細資訊彈出視窗 */}
+            <DayDetailSheet
+              open={sheetOpen}
+              onOpenChange={setSheetOpen}
+              date={selectedDate}
+              shifts={selectedShifts}
+              leaves={selectedLeaves}
             />
 
             {/* 頁尾說明 */}
