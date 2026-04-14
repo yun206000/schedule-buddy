@@ -1,6 +1,6 @@
 ## Project info
 
-**URL**: schedule-buddy-gamma.vercel.app
+**URL**: [schedule-buddy-gamma.vercel.app](https://schedule-buddy-gamma.vercel.app/)
 
 **Use your preferred IDE**
 
